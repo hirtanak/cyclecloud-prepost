@@ -7,10 +7,10 @@
 1. テンプレート本体をダウンロード
 2. 展開、ディレクトリ移動
 3. cyclecloudコマンドラインからテンプレートインストール 
-   - tar zxvf cyclecloud-prepost<version>.tar.gz
-   - cd cyclecloud-prepost<version>
+   - tar zxvf cyclecloud-prepost\<version>.tar.gz
+   - cd cyclecloud-prepost\<version>
    - cyclecloud project upload azure-storage
-   - cyclecloud import_template -f templates/prepost-vm_<version>.txt
+   - cyclecloud import_template -f templates/prepost-vm_\<version>.txt
 4. 削除したい場合、 cyclecloud delete_template prepost コマンドで削除可能
 
 ***
