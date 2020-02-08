@@ -1,0 +1,236 @@
+# Copyright (c) 2020 Hiroshi Tanaka, hirtanak@gmail.com @hirtanak
+# Licensed under the MIT License.
+################################
+## Cluster Configuration File ##
+################################
+
+[cluster prepost]
+IconUrl = static/cloud/cluster/ui/ClusterIcon/microsoft.png
+FormLayout = selectionpanel
+Category = Infrastructure
+
+    [[node defaults]]
+    Credentials = $Credentials    
+    SubnetId = $SubnetId
+    Region = $Region
+    KeyPairLocation = ~/.ssh/cyclecloud.pem
+    
+    [[node master]]
+    MachineType = $MachineType
+    IsReturnProxy = $ReturnProxy
+    ImageName = $ImageName
+#    ImageName = $CustomImageName
+    AdditionalClusterInitSpecs = $ClusterInitSpecs
+    InstallJetpack = true
+    JetpackPlatform = ${configuration_prepost_jetpack_platform[ImageName]}
+    AwaitInstallation = true
+
+        [[[configuration]]]
+
+        [[[cluster-init prepost:viz:1.0.0]]]
+        Optional = True
+    
+        [[[network-interface eth0]]]
+        AssociatePublicIpAddress = $UsePublicNetwork
+        StaticPublicIpAddress = true
+
+        [[[input-endpoint ganglia]]]
+        PrivatePort = 8652
+        PublicPort = 8652
+
+    [[nodearray viz-vmss]]
+    MachineType = $VizVMSSMachineType
+    Interruptible = $UseLowPrio
+    ImageName = $VizVMSSImageName
+    AdditionalClusterInitSpecs = $VizVMSSClusterInitSpecs
+
+#    Username = $Username
+#    Password = $WindowsPassword
+
+#        [[[configuration]]]
+
+#        [[[cluster-init prepost:viz:1.0.0]]]
+#        Optional = True
+
+        [[[network-interface eth0]]]
+        AssociatePublicIpAddress = $VizNodesPublic
+        StaticPublicIpAddress = true
+
+
+[parameters About]
+Order = 1
+
+    [[parameters About]]
+
+        [[[parameter prepost]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+        Config.Template := "<p>Prepsot VM template which supports VMSS Viz node cluster</p>"
+
+[parameters Required Settings]
+Order = 10
+
+    [[parameters Virtual Machines]]
+    Description = "Configure which VM type to use based on the requirements of your application."
+    Order = 20
+
+        [[[parameter Region]]]
+        Label = Region
+        Description = Deployment Location
+        ParameterType = Cloud.Region
+        DefaultValue = japaneast
+
+        [[[parameter MachineType]]]
+        Label = prepost VM Type
+        Description = prepost VM type
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_NV6
+
+        [[[parameter VizVMSSMachineType]]]
+        Label = Viz VMSS Array 
+        Description = array node VM type
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_NV6
+
+    [[parameters Auto-Scaling]]
+    Description = "The cluster can autoscale to the workload, adding execute hosts as jobs are queued. To enable this check the box below and choose the initial and maximum core counts for the cluster"
+    Order = 30
+
+        [[[parameter Autoscale]]]
+        Label = Autoscale
+        DefaultValue = true
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Start and stop execute instances automatically
+
+        [[[parameter MaxExecuteCoreCount]]]
+        Label = Max Cores
+        Description = The total number of execute cores to start
+        DefaultValue = 60
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 0
+        Config.IntegerOnly = true
+
+        [[[parameter UseLowPrio]]]
+        Label = Low Priority
+        DefaultValue = true
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Use low priority instances for execute hosts
+
+    [[parameters Networking]]
+    Order = 40
+
+        [[[parameter SubnetId]]]
+        Label = Subnet ID
+        Description = Subnet Resource Path (ResourceGroup/VirtualNetwork/Subnet)
+        ParameterType = Azure.Subnet
+        Required = True
+
+
+[parameters Advanced Settings]
+Order = 20
+
+    [[parameters Azure Settings]]
+    Order = 10 
+
+        [[[parameter Credentials]]]
+        Description = The credentials for the cloud provider
+        ParameterType = Cloud.Credentials        
+
+    [[parameters Software]]
+    Description = "Specify the base OS installed on all nodes, and optionally the cluster-init and chef versions from your Locker."
+    Order = 10
+
+        [[[parameter ImageName]]]
+        Label = prepost VM OS
+#        ParameterType = Cloud.Image
+        DefaultValue = cycle.image.win2016
+        config.plugin = pico.control.AutoCompleteDropdown
+            [[[[list Config.Entries]]]]
+            Name = MicrosoftWindowsDesktop:Windows-10:19h2-ent:latest
+            Label = Windows-10 1902
+            [[[[list Config.Entries]]]]
+            Name = nvidia:nvidia-quadro-vws-win2016:win2016-19-04-grid8:19.04:latest
+            Label = NVIDIA Quadro WS2016
+            [[[[list Config.Entries]]]]
+            Name = nvidia:nvidia-quadro-vws-win2019:nvidia-quadro-vws-win2019-19-04:19.04:latest
+            Label = NVIDIA Quadro WS2019
+            [[[[list Config.Entries]]]]
+            Name = cycle.image.win2016
+            Label = Basic Windows 2016
+            [[[[list Config.Entries]]]]
+            Name = cycle.image.centos7
+            Label = centos7
+            [[[[list Config.Entries]]]]
+            Name = microsoft-ads:windows-data-science-vm:windows2016:latest
+            Label = DSVM Windows 2016
+            [[[[list Config.Entries]]]]
+            Name = microsoft-ads:linux-data-science-vm:linuxdsvm:latest
+            Label = DSVM CentOS
+            [[[[list Config.Entries]]]]
+            Name = microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntu:latest
+            Label = DSVM Ubuntu
+        ImageName = $CustomImageName
+
+        [[[parameter configuration_prepost_jetpack_platform]]]
+        required = True
+        label = Jetpack Platform
+        parametertype = hidden
+            [[[[record DefaultValue]]]]
+            centos7 = centos-7
+            Windows-10-1902 = windows
+            NVIDIA Quadro WS2016 = windows
+            NVIDIA Quadro WS2019 = windows
+            Basic Windows 2016 = windows
+            DSVM Windows 2016 = windows
+            DSVM CentOS = centos-7
+            DSVM Ubuntu = ubuntu-16.04
+
+        [[[parameter CustomImageName]]]
+        Label = Custom Image
+
+        [[[parameter ClusterInitSpecs]]]
+        Label = Cluster-Init
+        DefaultValue = =undefined
+        Description = Cluster init specs to apply to the node
+        ParameterType = Cloud.ClusterInitSpecs	
+
+        [[[parameter VizVMSSImageName]]]
+        Label = Viz VMSS Array OS
+        ParameterType = Cloud.Image
+        DefaultValue = MicrosoftWindowsDesktop:Windows-10:19h2-ent:latest
+        config.plugin = pico.control.AutoCompleteDropdown
+            [[[[list Config.Entries]]]]
+            Name = MicrosoftWindowsDesktop:Windows-10:19h2-ent:latest
+            Label = Windows-10-1902
+            Config.OS = Windows
+            [[[[list Config.Entries]]]]
+            Name = cycle.image.centos7
+            Label = cycle.image.centos7
+            Config.OS = Linux
+
+        [[[parameter VizVMSSClusterInitSpecs]]]
+        Label = Cluster-Init
+        DefaultValue = =undefined
+        Description = Cluster init specs to apply to the node
+        ParameterType = Cloud.ClusterInitSpecs  
+
+    [[parameters Advanced Networking]]
+    Description = Advanced networking settings
+
+        [[[parameter ReturnProxy]]]
+        Label = Return Proxy
+        DefaultValue = flase
+        ParameterType = Boolean
+        Config.Label = Use SSH tunnel to connect to CycleCloud (required if direct access is blocked)
+
+        [[[parameter UsePublicNetwork]]]
+        Label = prepost Node
+        DefaultValue = true
+        ParameterType = Boolean
+        Config.Label = Prepost node from the Internet
+
+        [[[parameter VizNodesPublic]]]
+        Label = VizNodes Array
+        DefaultValue = true
+        ParameterType = Boolean
+        Config.Label = Prepost VizVMSS nodes from the Internet
