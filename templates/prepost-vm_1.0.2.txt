@@ -15,7 +15,7 @@ Category = Infrastructure
     Region = $Region
     KeyPairLocation = ~/.ssh/cyclecloud.pem
     
-    [[node viz]]
+    [[node prepost]]
     MachineType = $MachineType
     IsReturnProxy = $ReturnProxy
     ImageName = $ImageName
@@ -26,7 +26,7 @@ Category = Infrastructure
 
         [[[configuration]]]
 
-        [[[cluster-init prepost:viz:1.0.0]]]
+        [[[cluster-init prepost:viz:1.0.2]]]
         Optional = True
     
         [[[network-interface eth0]]]
@@ -46,10 +46,10 @@ Category = Infrastructure
 #    Username = $Username
 #    Password = $WindowsPassword
 
-#        [[[configuration]]]
+        [[[configuration]]]
 
-#        [[[cluster-init prepost:viz:1.0.0]]]
-#        Optional = True
+        [[[cluster-init prepost:viz:1.0.2]]]
+        Optional = True
 
         [[[network-interface eth0]]]
         AssociatePublicIpAddress = $VizNodesPublic
@@ -140,9 +140,10 @@ Order = 20
     Order = 10
 
         [[[parameter ImageName]]]
+        required = False
         Label = prepost VM OS
-#        ParameterType = Cloud.Image
-        DefaultValue = cycle.image.win2016
+        ParameterType = Cloud.Image
+        DefaultValue = MicrosoftWindowsDesktop:Windows-10:19h2-ent:latest
         config.plugin = pico.control.AutoCompleteDropdown
             [[[[list Config.Entries]]]]
             Name = MicrosoftWindowsDesktop:Windows-10:19h2-ent:latest
@@ -168,7 +169,6 @@ Order = 20
             [[[[list Config.Entries]]]]
             Name = microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntu:latest
             Label = DSVM Ubuntu
-        ImageName = $CustomImageName
 
         [[[parameter configuration_prepost_jetpack_platform]]]
         required = True
@@ -184,9 +184,6 @@ Order = 20
             DSVM CentOS = centos-7
             DSVM Ubuntu = ubuntu-16.04
 
-        [[[parameter CustomImageName]]]
-        Label = Custom Image
-
         [[[parameter ClusterInitSpecs]]]
         Label = Cluster-Init
         DefaultValue = =undefined
@@ -194,18 +191,10 @@ Order = 20
         ParameterType = Cloud.ClusterInitSpecs	
 
         [[[parameter VizVMSSImageName]]]
-        Label = Viz VMSS Array OS
+        Label = VMSS: CustomImage
         ParameterType = Cloud.Image
         DefaultValue = MicrosoftWindowsDesktop:Windows-10:19h2-ent:latest
-        config.plugin = pico.control.AutoCompleteDropdown
-            [[[[list Config.Entries]]]]
-            Name = MicrosoftWindowsDesktop:Windows-10:19h2-ent:latest
-            Label = Windows-10-1902
-            Config.OS = Windows
-            [[[[list Config.Entries]]]]
-            Name = cycle.image.centos7
-            Label = cycle.image.centos7
-            Config.OS = Linux
+	JetpackPlatform = windows
 
         [[[parameter VizVMSSClusterInitSpecs]]]
         Label = Cluster-Init

@@ -7,10 +7,10 @@ include_recipe 'chocolatey::default'
 # action :install
 #end
 
-#chocolatey_package 'firefox' do
-# action :install
-#end
-#
+chocolatey_package 'firefox' do
+ action :install
+end
+
 
 #chocolatey_package 'nvidia-display-driver' do
 # action :install
